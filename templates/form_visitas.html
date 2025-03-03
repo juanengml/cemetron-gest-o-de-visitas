@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Cemetrom - Gestão de Visitas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-gradient-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-users me-2"></i>Gestão de Visitas</h4>
+            </div>
+            <div class="card-body p-0">
+                <ul class="nav nav-tabs" id="visitasTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="registro-tab" data-bs-toggle="tab" data-bs-target="#registro" type="button" role="tab" aria-controls="registro" aria-selected="true">
+                            <i class="fas fa-user-plus me-1"></i> Registrar Visita
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="ativas-tab" data-bs-toggle="tab" data-bs-target="#ativas" type="button" role="tab" aria-controls="ativas" aria-selected="false">
+                            <i class="fas fa-clock me-1"></i> Visitas em Andamento
+                            <span class="badge bg-danger">{{ visitas_ativas|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="espera-tab" data-bs-toggle="tab" data-bs-target="#espera" type="button" role="tab" aria-controls="espera" aria-selected="false">
+                            <i class="fas fa-hourglass-half me-1"></i> Fila de Espera
+                            <span class="badge bg-warning text-dark">{{ visitas_espera|length }}</span>
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content p-3" id="visitasTabsContent">
+                    <!-- Tab de Registro de Visita -->
+                    <div class="tab-pane fade show active" id="registro" role="tabpanel" aria-labelledby="registro-tab">
+                        <form action="{{ url_for('form_visitas') }}" method="post" class="needs-validation" novalidate>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="visitor_name" class="form-label">Nome do Visitante</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="visitor_name" name="visitor_name" required>
+                                        <div class="invalid-feedback">
+                                            Por favor, informe o nome do visitante.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="patient_id" class="form-label">Paciente</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-bed"></i></span>
+                                        <select class="form-select" id="patient_id" name="patient_id" required>
+                                            <option value="" selected disabled>Selecione um paciente</option>
+                                            {% for paciente in pacientes %}
+                                                <option value="{{ paciente.id }}" data-ward="{{ paciente.ala_id }}">
+                                                    {{ paciente.nome }} ({{ paciente.ala_id }} - Quarto: {{ paciente.quarto }}, Leito: {{ paciente.leito }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor, selecione um paciente.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="ward" class="form-label">Ala</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-hospital-alt"></i></span>
+                                        <select class="form-select" id="ward" name="ward" required>
+                                            <option value="" selected disabled>Selecione uma ala</option>
+                                            {% for ala in alas %}
+                                                <option value="{{ ala.sigla }}">{{ ala.nome }} ({{ ala.sigla }})</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor, selecione uma ala.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Registrar Visita
+                                </button>
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Cada paciente pode receber no máximo 3 visitas por dia, com duração máxima de 30 minutos cada.
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Tab de Visitas em Andamento -->
+                    <div class="tab-pane fade" id="ativas" role="tabpanel" aria-labelledby="ativas-tab">
+                        {% if visitas_ativas %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Visitante</th>
+                                            <th>Paciente</th>
+                                            <th>Ala</th>
+                                            <th>Início</th>
+                                            <th>Término</th>
+                                            <th>Tempo Restante</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for visita in visitas_ativas %}
+                                            <tr class="visit-row {{ visita.status_class }}" data-visit-id="{{ visita.id }}" data-end-time="{{ visita.end_time }}">
+                                                <td>{{ visita.visitor_name }}</td>
+                                                <td>{{ visita.patient_name }}</td>
+                                                <td>
+                                                    <span class="badge rounded-pill 
+                                                        {% if visita.ward == 'Infecto' %}bg-danger{% endif %}
+                                                        {% if visita.ward == 'Viral' %}bg-warning text-dark{% endif %}
+                                                        {% if visita.ward == 'Pediatria' %}bg-info{% endif %}
+                                                        {% if visita.ward == 'Oncologia' %}bg-dark{% endif %}
+                                                        {% if visita.ward == 'Cirurgia' %}bg-success{% endif %}
+                                                        {% if visita.ward == 'UTI' %}bg-secondary{% endif %}
+                                                    ">
+                                                        {{ visita.ward }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ visita.start_time|format_time }}</td>
+                                                <td>{{ visita.end_time|format_time }}</td>
+                                                <td class="countdown" data-end-time="{{ visita.end_time }}">
+                                                    <div class="progress">
+                                                        {% set remaining_percent = (visita.remaining_seconds / 1800) * 100 %}
+                                                        <div class="progress-bar progress-bar-striped 
+                                                            {% if visita.status_class == 'warning' %}bg-warning{% endif %}
+                                                            {% if visita.status_class == 'expired' %}bg-danger{% endif %}
+                                                            {% if visita.status_class == 'normal' %}bg-success{% endif %}
+                                                            progress-bar-animated" 
+                                                            role="progressbar" 
+                                                            style="width: {{ remaining_percent }}%" 
+                                                            aria-valuenow="{{ remaining_percent }}" 
+                                                            aria-valuemin="0" 
+                                                            aria-valuemax="100">
+                                                            {{ visita.remaining_formatted }}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <a href="{{ url_for('finalizar_visita_route', id=visita.id) }}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-sign-out-alt"></i> Finalizar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Não há visitas em andamento no momento.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Tab de Fila de Espera -->
+                    <div class="tab-pane fade" id="espera" role="tabpanel" aria-labelledby="espera-tab">
+                        {% if visitas_espera %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Visitante</th>
+                                            <th>Paciente</th>
+                                            <th>Ala</th>
+                                            <th>Hora do Registro</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for visita in visitas_espera %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ visita.visitor_name }}</td>
+                                                <td>{{ visita.patient_name }}</td>
+                                                <td>
+                                                    <span class="badge rounded-pill 
+                                                        {% if visita.ward == 'Infecto' %}bg-danger{% endif %}
+                                                        {% if visita.ward == 'Viral' %}bg-warning text-dark{% endif %}
+                                                        {% if visita.ward == 'Pediatria' %}bg-info{% endif %}
+                                                        {% if visita.ward == 'Oncologia' %}bg-dark{% endif %}
+                                                        {% if visita.ward == 'Cirurgia' %}bg-success{% endif %}
+                                                        {% if visita.ward == 'UTI' %}bg-secondary{% endif %}
+                                                    ">
+                                                        {{ visita.ward }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ visita.registration_time|format_datetime }}</td>
+                                                <td>
+                                                    <a href="{{ url_for('iniciar_visita_route', id=visita.id) }}" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-play"></i> Iniciar Visita
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Não há visitas na fila de espera.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    // Auto-atualizar a aba de visitas ativas a cada 30 segundos
+    if (document.getElementById('ativas-tab')) {
+        setInterval(function() {
+            if (document.getElementById('ativas-tab').getAttribute('aria-selected') === 'true') {
+                // Se estiver na aba de visitas ativas, considere recarregar dados via AJAX
+                console.log('Aba de visitas ativas está ativa');
+            }
+        }, 30000);
+    }
+    
+    // Script para atualizar o campo de ala baseado no paciente selecionado
+    document.getElementById('patient_id').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const ward = selectedOption.getAttribute('data-ward');
+        
+        if (ward) {
+            const wardSelect = document.getElementById('ward');
+            for (let i = 0; i < wardSelect.options.length; i++) {
+                if (wardSelect.options[i].value === ward) {
+                    wardSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

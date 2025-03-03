@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+
+{% block title %}Cemetrom - Relatórios de Visitas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-gradient-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Relatórios de Visitas</h4>
+            </div>
+            <div class="card-body">
+                <!-- Filtros de Relatório -->
+                <form method="get" action="{{ url_for('relatorio') }}" class="mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="data_inicio" class="form-label">Data Inicial</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="data_fim" class="form-label">Data Final</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ data_fim }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Painéis de Estatísticas -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ estatisticas.total_visitas }}</h1>
+                                <p class="mb-0">Total de Visitas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ estatisticas.visitas_completas }}</h1>
+                                <p class="mb-0">Visitas Concluídas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-dark h-100">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ estatisticas.visitas_ativas }}</h1>
+                                <p class="mb-0">Visitas em Andamento</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ estatisticas.visitas_espera }}</h1>
+                                <p class="mb-0">Visitas em Espera</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gráficos e Análises -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Visitas por Ala</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if estatisticas.visitas_por_ala %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Ala</th>
+                                                    <th>Quantidade</th>
+                                                    <th>Percentual</th>
+                                                    <th>Gráfico</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for ala in estatisticas.visitas_por_ala %}
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge rounded-pill 
+                                                                {% if ala.ala == 'Infecto' %}bg-danger{% endif %}
+                                                                {% if ala.ala == 'Viral' %}bg-warning text-dark{% endif %}
+                                                                {% if ala.ala == 'Pediatria' %}bg-info{% endif %}
+                                                                {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
+                                                                {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
+                                                                {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                            ">
+                                                                {{ ala.ala }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ ala.quantidade }}</td>
+                                                        <td>{{ ala.percentual }}%</td>
+                                                        <td width="40%">
+                                                            <div class="progress">
+                                                                <div class="progress-bar 
+                                                                    {% if ala.ala == 'Infecto' %}bg-danger{% endif %}
+                                                                    {% if ala.ala == 'Viral' %}bg-warning{% endif %}
+                                                                    {% if ala.ala == 'Pediatria' %}bg-info{% endif %}
+                                                                    {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
+                                                                    {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
+                                                                    {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                                " 
+                                                                role="progressbar" 
+                                                                style="width: {{ ala.percentual }}%" 
+                                                                aria-valuenow="{{ ala.percentual }}" 
+                                                                aria-valuemin="0" 
+                                                                aria-valuemax="100">
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Não há dados de visitas por ala para o período selecionado.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Tempo Médio de Visita</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if estatisticas.tempo_medio_por_ala %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Ala</th>
+                                                    <th>Tempo Médio</th>
+                                                    <th>Gráfico</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for ala in estatisticas.tempo_medio_por_ala %}
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge rounded-pill 
+                                                                {% if ala.ala == 'Infecto' %}bg-danger{% endif %}
+                                                                {% if ala.ala == 'Viral' %}bg-warning text-dark{% endif %}
+                                                                {% if ala.ala == 'Pediatria' %}bg-info{% endif %}
+                                                                {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
+                                                                {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
+                                                                {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                            ">
+                                                                {{ ala.ala }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ ala.tempo_medio }} min</td>
+                                                        <td width="40%">
+                                                            <div class="progress">
+                                                                {% set percentual = (ala.tempo_medio / 30) * 100 %}
+                                                                <div class="progress-bar 
+                                                                    {% if ala.ala == 'Infecto' %}bg-danger{% endif %}
+                                                                    {% if ala.ala == 'Viral' %}bg-warning{% endif %}
+                                                                    {% if ala.ala == 'Pediatria' %}bg-info{% endif %}
+                                                                    {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
+                                                                    {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
+                                                                    {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                                " 
+                                                                role="progressbar" 
+                                                                style="width: {{ percentual }}%" 
+                                                                aria-valuenow="{{ percentual }}" 
+                                                                aria-valuemin="0" 
+                                                                aria-valuemax="100">
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Não há dados sobre tempo médio de visitas para o período selecionado.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabela de Visitas Detalhadas -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Listagem Detalhada de Visitas</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportarPDF()">
+                                <i class="fas fa-file-pdf me-1"></i> PDF
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="exportarExcel()">
+                                <i class="fas fa-file-excel me-1"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if relatorio %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="tabelaVisitas">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Visitante</th>
+                                            <th>Paciente</th>
+                                            <th>Ala</th>
+                                            <th>Registro</th>
+                                            <th>Início</th>
+                                            <th>Término</th>
+                                            <th>Duração</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for visita in relatorio %}
+                                            <tr>
+                                                <td>{{ visita.visitor_name }}</td>
+                                                <td>{{ visita.patient_name }}</td>
+                                                <td>
+                                                    <span class="badge rounded-pill 
+                                                        {% if visita.ward == 'Infecto' %}bg-danger{% endif %}
+                                                        {% if visita.ward == 'Viral' %}bg-warning text-dark{% endif %}
+                                                        {% if visita.ward == 'Pediatria' %}bg-info{% endif %}
+                                                        {% if visita.ward == 'Oncologia' %}bg-dark{% endif %}
+                                                        {% if visita.ward == 'Cirurgia' %}bg-success{% endif %}
+                                                        {% if visita.ward == 'UTI' %}bg-secondary{% endif %}
+                                                    ">
+                                                        {{ visita.ward }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ visita.registration_time|format_datetime }}</td>
+                                                <td>{{ visita.start_time|format_datetime if visita.start_time else '-' }}</td>
+                                                <td>{{ visita.end_time|format_datetime if visita.end_time else '-' }}</td>
+                                                <td>
+                                                    {% if visita.start_time and visita.end_time %}
+                                                        {{ visita.duracao_minutos }} min
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge 
+                                                        {% if visita.status == 'waiting' %}bg-warning text-dark{% endif %}
+                                                        {% if visita.status == 'active' %}bg-success{% endif %}
+                                                        {% if visita.status == 'completed' %}bg-primary{% endif %}
+                                                    ">
+                                                        {% if visita.status == 'waiting' %}Em Espera{% endif %}
+                                                        {% if visita.status == 'active' %}Em Andamento{% endif %}
+                                                        {% if visita.status == 'completed' %}Concluída{% endif %}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info m-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Não há dados de visitas para o período selecionado.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    // Funções para exportação de dados (mockup)
+    function exportarPDF() {
+        alert('Função de exportação para PDF será implementada aqui.');
+        // Em uma implementação real, utilizaríamos uma biblioteca como jsPDF
+    }
+    
+    function exportarExcel() {
+        alert('Função de exportação para Excel será implementada aqui.');
+        // Em uma implementação real, utilizaríamos uma biblioteca como SheetJS
+    }
+    
+    // Definir valores padrão para os filtros de data, se estiverem vazios
+    document.addEventListener('DOMContentLoaded', function() {
+        const dataInicio = document.getElementById('data_inicio');
+        const dataFim = document.getElementById('data_fim');
+        
+        if (!dataInicio.value) {
+            // Definir data inicial como primeiro dia do mês atual
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            dataInicio.value = primeiroDia.toISOString().split('T')[0];
+        }
+        
+        if (!dataFim.value) {
+            // Definir data final como hoje
+            const hoje = new Date();
+            dataFim.value = hoje.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}

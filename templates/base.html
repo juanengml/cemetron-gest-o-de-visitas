@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cemetrom - Sistema de Gestão de Visitas{% endblock %}</title>
+    
+    <!-- Bootstrap CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Estilos básicos para complementar o Bootstrap */
+        .bg-gradient-primary {
+            background: linear-gradient(to right, #0d6efd, #0a58ca);
+        }
+        .bg-gradient-success {
+            background: linear-gradient(to right, #198754, #157347);
+        }
+        .bg-gradient-info {
+            background: linear-gradient(to right, #0dcaf0, #0aa2c0);
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(to right, #ffc107, #cc9a06);
+        }
+        
+        /* Classes para o temporizador */
+        .visit-row.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+        .visit-row.expired {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        .countdown {
+            font-weight: bold;
+        }
+        
+        /* Estilo para o footer fixo */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content {
+            flex: 1;
+        }
+        
+        /* Responsividade para dispositivos móveis */
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            .btn-sm {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+    
+    {% block custom_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-hospital-user me-2"></i>
+                Cemetrom
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('form_visitas') %}active{% endif %}" href="{{ url_for('form_visitas') }}">
+                            <i class="fas fa-users me-1"></i> Visitas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('form_pacientes') %}active{% endif %}" href="{{ url_for('form_pacientes') }}">
+                            <i class="fas fa-bed me-1"></i> Pacientes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('relatorio') %}active{% endif %}" href="{{ url_for('relatorio') }}">
+                            <i class="fas fa-chart-bar me-1"></i> Relatórios
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container my-4 content">
+        <!-- Mensagens flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Conteúdo da página -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Cemetrom - Sistema de Gestão de Visitas</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle com Popper via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Script para validação de formulários -->
+    <script>
+        // Ativar validação de formulários Bootstrap
+        (function() {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+        
+        // Função para atualizar os temporizadores de visitas ativas
+        function updateTimers() {
+            document.querySelectorAll('.countdown').forEach(function(element) {
+                const endTime = new Date(element.dataset.endTime);
+                const now = new Date();
+                let remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+                
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                
+                // Atualizar texto
+                const text = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+                const progressBar = element.querySelector('.progress-bar');
+                
+                if (progressBar) {
+                    progressBar.textContent = text;
+                    
+                    // Atualizar barra de progresso
+                    const totalDuration = 30 * 60; // 30 minutos em segundos
+                    const percent = (remaining / totalDuration) * 100;
+                    progressBar.style.width = percent + '%';
+                    
+                    // Atualizar classes
+                    progressBar.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+                    
+                    if (remaining <= 0) {
+                        progressBar.classList.add('bg-danger');
+                        element.closest('tr').classList.add('expired');
+                        element.closest('tr').classList.remove('warning', 'normal');
+                    } else if (remaining < 300) { // Menos de 5 minutos
+                        progressBar.classList.add('bg-warning');
+                        element.closest('tr').classList.add('warning');
+                        element.closest('tr').classList.remove('expired', 'normal');
+                    } else {
+                        progressBar.classList.add('bg-success');
+                        element.closest('tr').classList.add('normal');
+                        element.closest('tr').classList.remove('expired', 'warning');
+                    }
+                }
+            });
+        }
+        
+        // Atualizar temporizadores a cada segundo se houver elementos de contagem regressiva
+        if (document.querySelectorAll('.countdown').length > 0) {
+            setInterval(updateTimers, 1000);
+            updateTimers(); // Executar imediatamente
+        }
+    </script>
+    
+    {% block custom_js %}{% endblock %}
+</body>
+</html>
