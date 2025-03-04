@@ -60,11 +60,34 @@ def get_relatorio_por_periodo(data_inicio, data_fim):
         visita = dict(row)
         
         # Calcular duração da visita para visitas concluídas
-        if visita['start_time'] and visita['end_time'] and visita['status'] == 'completed':
-            start_time = datetime.fromisoformat(visita['start_time'])
-            end_time = datetime.fromisoformat(visita['end_time'])
-            duracao = (end_time - start_time).total_seconds() / 60  # Duração em minutos
-            visita['duracao_minutos'] = round(duracao, 1)
+        if visita['status'] == 'completed' and visita['start_time'] is not None and visita['end_time'] is not None:
+            try:
+                # Converter para string se for outro tipo de dado
+                start_time_str = visita['start_time'] if isinstance(visita['start_time'], str) else str(visita['start_time'])
+                end_time_str = visita['end_time'] if isinstance(visita['end_time'], str) else str(visita['end_time'])
+                
+                # Tentar converter para datetime
+                try:
+                    start_time = datetime.fromisoformat(start_time_str)
+                except ValueError:
+                    # Formato alternativo comum no SQLite
+                    start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
+                
+                try:
+                    end_time = datetime.fromisoformat(end_time_str)
+                except ValueError:
+                    # Formato alternativo comum no SQLite
+                    end_time = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S')
+                
+                # Calcular duração
+                duracao = (end_time - start_time).total_seconds() / 60  # Duração em minutos
+                visita['duracao_minutos'] = round(duracao, 1)
+            except (ValueError, TypeError) as e:
+                print(f"Erro ao processar datas da visita {visita['id']}: {e}")
+                # Definir uma duração padrão para não quebrar a interface
+                visita['duracao_minutos'] = 0
+        else:
+            visita['duracao_minutos'] = 0
         
         visitas.append(visita)
     

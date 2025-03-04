@@ -36,29 +36,50 @@ def get_visitas(status=None, limit=None):
     cursor = db.execute(query, params)
     visitas = []
     
+    # Tratamento seguro dos dados retornados
     for row in cursor.fetchall():
-        visita = dict(row)
-        
-        # Adicionar informações de tempo restante para visitas ativas
-        if visita['status'] == 'active' and visita['end_time']:
-            end_time = datetime.fromisoformat(visita['end_time'])
-            now = datetime.now()
-            remaining = (end_time - now).total_seconds()
-            visita['remaining_seconds'] = max(0, remaining)
+        try:
+            visita = dict(row)
             
-            # Formatação para exibição
-            minutes, seconds = divmod(int(remaining), 60)
-            visita['remaining_formatted'] = f"{minutes}:{seconds:02d}"
+            # Verificar e tratar campos de data
+            for campo in ['registration_time', 'start_time', 'end_time']:
+                if visita[campo] and isinstance(visita[campo], str):
+                    # Garantir que o formato está correto (ex: 2025-03-03T13:30:00)
+                    try:
+                        data = datetime.fromisoformat(visita[campo])
+                        visita[campo] = data.isoformat()  # Garantir formato consistente
+                    except (ValueError, TypeError):
+                        visita[campo] = None  # Se não conseguir converter, assumir como nulo
             
-            # Classe CSS baseada no tempo restante
-            if remaining <= 0:
-                visita['status_class'] = "expired"
-            elif remaining < 300:  # Menos de 5 minutos
-                visita['status_class'] = "warning"
-            else:
-                visita['status_class'] = "normal"
-        
-        visitas.append(visita)
+            # Adicionar informações de tempo restante para visitas ativas
+            if visita['status'] == 'active' and visita['end_time']:
+                try:
+                    end_time = datetime.fromisoformat(visita['end_time'])
+                    now = datetime.now()
+                    remaining = (end_time - now).total_seconds()
+                    visita['remaining_seconds'] = max(0, remaining)
+                    
+                    # Formatação para exibição
+                    minutes, seconds = divmod(int(remaining), 60)
+                    visita['remaining_formatted'] = f"{minutes}:{seconds:02d}"
+                    
+                    # Classe CSS baseada no tempo restante
+                    if remaining <= 0:
+                        visita['status_class'] = "expired"
+                    elif remaining < 300:  # Menos de 5 minutos
+                        visita['status_class'] = "warning"
+                    else:
+                        visita['status_class'] = "normal"
+                except Exception:
+                    # Tratar caso haja erro no cálculo
+                    visita['remaining_seconds'] = 0
+                    visita['remaining_formatted'] = "0:00"
+                    visita['status_class'] = "expired"
+            
+            visitas.append(visita)
+        except Exception as e:
+            print(f"Erro ao processar visita: {e}")
+            continue
     
     return visitas
 
@@ -184,7 +205,7 @@ def iniciar_visita(visita_id):
         SET status = 'active', start_time = ?, end_time = ?
         WHERE id = ?
         """,
-        (now.isoformat(), end_time.isoformat(), visita_id)
+        (now.strftime("%Y-%m-%d %H:%M:%S"), end_time.strftime("%Y-%m-%d %H:%M:%S"), visita_id)
     )
     
     db.commit()
@@ -218,7 +239,7 @@ def finalizar_visita(visita_id):
         SET status = 'completed', end_time = ?
         WHERE id = ?
         """,
-        (now.isoformat(), visita_id)
+        (now.strftime("%Y-%m-%d %H:%M:%S"), visita_id)
     )
     
     db.commit()
