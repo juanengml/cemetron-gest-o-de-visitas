@@ -96,7 +96,7 @@
     <div class="col-md-8">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-gradient-success text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Lista de Pacientes</h5>
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Consulta de Pacientes Internados</h5>
                 <span class="badge bg-light text-dark">{{ pacientes|length }} pacientes</span>
             </div>
             <div class="card-body p-0">
@@ -106,7 +106,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Ala</th>
+                                    <th>Clínica</th>
                                     <th>Quarto</th>
                                     <th>Leito</th>
                                     <th>Ações</th>
@@ -118,15 +118,18 @@
                                         <td>{{ paciente.nome }}</td>
                                         <td>
                                             <span class="badge rounded-pill 
-                                                {% if paciente.ala_id == 'Infecto' %}bg-danger{% endif %}
-                                                {% if paciente.ala_id == 'Viral' %}bg-warning text-dark{% endif %}
-                                                {% if paciente.ala_id == 'Pediatria' %}bg-info{% endif %}
-                                                {% if paciente.ala_id == 'Oncologia' %}bg-dark{% endif %}
-                                                {% if paciente.ala_id == 'Cirurgia' %}bg-success{% endif %}
-                                                {% if paciente.ala_id == 'UTI' %}bg-secondary{% endif %}
-                                            ">
-                                                {{ paciente.ala_id }}
-                                            </span>
+                                        {% if paciente.ala_id == 'Infecto' %}bg-danger{% endif %}
+                                        {% if paciente.ala_id == 'Viral' %}bg-warning text-dark{% endif %}
+                                        {% if paciente.ala_id == 'Pediatria' %}bg-info{% endif %}
+                                        {% if paciente.ala_id == 'Oncologia' %}bg-dark{% endif %}
+                                        {% if paciente.ala_id == 'Cirurgia' %}bg-success{% endif %}
+                                        {% if paciente.ala_id == 'Clinica Feminina' %}bg-pink text-white{% endif %}
+                                        {% if paciente.ala_id == 'Clinica Masculina' %}bg-indigo text-white{% endif %}
+                                        {% if paciente.ala_id == 'UTI' %}bg-secondary{% endif %}
+                                        {% if paciente.ala_id == 'UTI Cardio e Adulto' %}bg-primary{% endif %}
+                                    ">
+                                        {{ paciente.ala_id }}
+                                    </span>
                                         </td>
                                         <td>{{ paciente.quarto }}</td>
                                         <td>{{ paciente.leito }}</td>
@@ -204,7 +207,9 @@
                                             {% if ala.sigla == 'Pediatria' %}bg-info{% endif %}
                                             {% if ala.sigla == 'Oncologia' %}bg-dark{% endif %}
                                             {% if ala.sigla == 'Cirurgia' %}bg-success{% endif %}
-                                            {% if ala.sigla == 'UTI' %}bg-secondary{% endif %}
+                                            {% if ala.sigla == 'UTI Cardio e Adulto' %}bg-primary{% endif %}
+                                            {% if ala.sigla == 'Clinica Feminina' %}bg-secondary{% endif %}
+                                            {% if ala.sigla == 'Clinica Masculina' %}bg-secondary{% endif %}
                                         ">
                                             {{ ala.sigla }}
                                         </span>

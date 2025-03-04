@@ -37,7 +37,9 @@ print("Dados existentes foram limpos.")
 alas = [
     ('Infecto', 'Infectologia', 'Requer uso de EPI completo'),
     ('Pediatria', 'Pediatria', 'Atendimento infantil'),
-    ('UTI', 'Unidade de Terapia Intensiva', 'Cuidados críticos')
+    ('UTI Cardio e Adulto', 'Unidade de Terapia Intensiva', 'Cuidados críticos'),
+    ('Clinica Feminina', 'Unidade Feminina', 'Cuidados Femininos'),
+    ('Clinica Masculina', 'Unidade Masculina', 'Cuidados Masculina')
 ]
 
 print("\nInserindo alas:")
@@ -52,10 +54,10 @@ conn.commit()
 
 # 2. Criar pacientes (5 pacientes)
 pacientes = [
-    ("João Silva", "UTI", "101", "A"),
+    ("João Silva", "UTI Cardio e Adulto", "101", "A"),
     ("Maria Oliveira", "Pediatria", "201", "B"),
     ("José Santos", "Infecto", "301", "A"),
-    ("Ana Pereira", "UTI", "102", "C"),
+    ("Ana Pereira", "UTI Cardio e Adulto", "102", "C"),
     ("Carlos Ferreira", "Pediatria", "202", "A")
 ]
 
