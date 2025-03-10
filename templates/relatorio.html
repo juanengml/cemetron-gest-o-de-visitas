@@ -103,6 +103,7 @@
                                                                 {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
                                                                 {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
                                                                 {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                                {% if ala.ala == 'UTI Cardio e Adulto' %}bg-primary{% endif %}
                                                             ">
                                                                 {{ ala.ala }}
                                                             </span>
@@ -118,6 +119,8 @@
                                                                     {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
                                                                     {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
                                                                     {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                                    {% if ala.ala == 'UTI Cardio e Adulto' %}bg-primary{% endif %}
+                                                                    
                                                                 " 
                                                                 role="progressbar" 
                                                                 style="width: {{ ala.percentual }}%" 
@@ -169,6 +172,7 @@
                                                                 {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
                                                                 {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
                                                                 {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                                {% if ala.ala == 'UTI Cardio e Adulto' %}bg-primary{% endif %}
                                                             ">
                                                                 {{ ala.ala }}
                                                             </span>
@@ -184,6 +188,7 @@
                                                                     {% if ala.ala == 'Oncologia' %}bg-dark{% endif %}
                                                                     {% if ala.ala == 'Cirurgia' %}bg-success{% endif %}
                                                                     {% if ala.ala == 'UTI' %}bg-secondary{% endif %}
+                                                                    {% if ala.ala == 'UTI Cardio e Adulto' %}bg-primary{% endif %}
                                                                 " 
                                                                 role="progressbar" 
                                                                 style="width: {{ percentual }}%" 
@@ -251,6 +256,7 @@
                                                         {% if visita.ward == 'Oncologia' %}bg-dark{% endif %}
                                                         {% if visita.ward == 'Cirurgia' %}bg-success{% endif %}
                                                         {% if visita.ward == 'UTI' %}bg-secondary{% endif %}
+                                                        {% if visita.ward== 'UTI Cardio e Adulto' %}bg-primary{% endif %}
                                                     ">
                                                         {{ visita.ward }}
                                                     </span>
